@@ -1,4 +1,5 @@
 const { createConnection } = require('promise-mysql')
+const { keys, map } = require('ramda')
 
 const listUsers = (req, res) => {
   let db
@@ -35,7 +36,34 @@ const getUser = (req, res) => {
     })
 }
 
+const createUser = (req, res) => {
+  const body = req.body
+  const requiredFields = ['first_name', 'last_name']
+  const allowedFields = [
+    'first_name',
+    'last_name',
+    'phone',
+    'email',
+    'birthday'
+  ]
+  let errorKeys = []
+  const bodyKeys = keys(body)
+  map(x => {
+    if (!bodyKeys.includes(x)) {
+      errorKeys.push(x)
+    }
+  }, requiredFields)
+  if (errorKeys.length > 0) {
+    return res.send({
+      error: `Missing required fields (${errorKeys.toString()})`
+    })
+  } else {
+    res.send({ bodyKeys, errorKeys })
+  }
+}
+
 module.exports = {
   listUsers,
-  getUser
+  getUser,
+  createUser
 }
